@@ -7,7 +7,7 @@ Consume la API de [`gestion-proyecto-backend`](https://github.com/escano1/gestio
 
 ## Desarrollo local
 
-Requisitos: Node.js 24.15+ (recomendado, igual que el CI) o 22.22.2+ de la línea 22, y la API corriendo (por defecto en `http://localhost:3001/api`).
+Requisitos: Node.js 24 (24.15 o posterior, igual que el CI y Vercel; también 22.22.2+) y la API corriendo (por defecto en `http://localhost:3001/api`).
 
 ```bash
 cp .env.example .env.local     # NEXT_PUBLIC_API_URL=http://localhost:3001/api
@@ -46,7 +46,7 @@ src/
 
 ## Despliegue en Vercel
 
-1. **Add New → Project** e importe el repositorio `escano1/gestion-proyecto-frontend` (Vercel detecta Next.js; no requiere configuración adicional).
+1. **Add New → Project** e importe el repositorio `escano1/gestion-proyecto-frontend`. El `vercel.json` fija el framework en Next.js (no configure *Output Directory*).
 2. Variable de entorno (Production y Preview):
    `NEXT_PUBLIC_API_URL = https://<servicio>.up.railway.app/api`
 3. Deploy. Luego agregue el dominio de Vercel a `CORS_ORIGINS` del servicio en Railway (p. ej. `https://gestion-proyectos.vercel.app`).
