@@ -1,185 +1,54 @@
-# 🎨 Frontend - Next.js + React + TailwindCSS
+# Gestión de Proyectos y Nómina — Frontend
 
-Interfaz web moderna para sistema de gestión de proyectos y nómina.
+Aplicación web para gestionar proyectos de ingeniería eléctrica, capturar horas trabajadas y consultar la nómina colombiana.
 
-**Stack**: Next.js 14+ | React 18+ | TypeScript | TailwindCSS | Zod  
-**Puerto**: `3000` (Next.js dev) | `3001` (fallback)
+**Stack:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · TanStack Query · React Hook Form + Zod · Recharts · Despliegue en Vercel.
+Consume la API de [`gestion-proyecto-backend`](https://github.com/escano1/gestion-proyecto-backend) (vea su README para levantarla en local); contrato en [`docs/API.md`](https://github.com/escano1/gestion-proyecto-claude/blob/main/docs/API.md).
 
----
+## Desarrollo local
 
-## 🎯 Propósito
+Requisitos: Node.js 24.15+ (recomendado, igual que el CI) o 22.22.2+ de la línea 22, y la API corriendo (por defecto en `http://localhost:3001/api`).
 
-Proporcionar interfaz intuitiva y responsiva para:
-- Autenticación y gestión de sesión (JWT)
-- CRUD de trabajadores, proyectos
-- Captura rápida de horas trabajadas
-- Consulta de nómina y descargas (PDF, Excel)
-- Reportes y dashboards
-- Validación client-side + server-side
+```bash
+cp .env.example .env.local     # NEXT_PUBLIC_API_URL=http://localhost:3001/api
+npm ci
+npm run dev                    # http://localhost:3000
+```
 
----
+| Script | Uso |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` / `npm start` | Compilación y servidor de producción |
+| `npm run lint` · `npm run typecheck` | ESLint y TypeScript (genera los tipos de rutas) |
+| `npm test` | Pruebas (Vitest + Testing Library) |
 
-## 📁 Estructura
+## Estructura
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx                   # Root layout
-│   ├── page.tsx                     # Home
-│   │
-│   ├── (auth)/
-│   │   ├── login/page.tsx
-│   │   └── logout/page.tsx
-│   │
-│   └── (dashboard)/
-│       ├── layout.tsx               # Sidebar + navbar
-│       ├── dashboard/page.tsx       # Dashboard principal
-│       ├── trabajadores/page.tsx    # CRUD
-│       ├── proyectos/page.tsx       # CRUD
-│       ├── registro-horas/page.tsx  # Captura rápida (CRÍTICA)
-│       ├── nomina/page.tsx          # Listado y detalle
-│       ├── reportes/page.tsx        # Reportes y gráficos
-│       └── configuracion/page.tsx   # Parámetros
-│
-├── components/
-│   ├── layout/                      # Layout components
-│   ├── forms/                       # Formularios
-│   ├── tables/                      # Tablas con datos
-│   ├── modals/                      # Diálogos
-│   └── ui/                          # Componentes base
-│
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useApi.ts
-│   ├── useForm.ts
-│   └── usePermissions.ts
-│
-├── lib/
-│   ├── api.ts                       # Cliente HTTP
-│   ├── auth.ts                      # JWT management
-│   ├── formatter.ts                 # Formato moneda, fechas
-│   └── validadores.ts               # Schemas Zod
-│
-├── types/
-│   └── index.ts                     # Tipos compartidos
-│
-├── store/
-│   └── useAuthStore.ts              # Zustand state
-│
-└── styles/
-    └── globals.css                  # TailwindCSS
+│   ├── login/                    # inicio de sesión
+│   └── (app)/                    # área autenticada (layout con guard de sesión y menú por rol)
+│       ├── dashboard · proyectos/[id] · trabajadores/[id]
+│       ├── registro-horas (captura semanal) · registro-horas/historial
+│       ├── nomina · nomina/[id] · nomina/desprendibles/[id]
+│       ├── reportes · auditoria · perfil
+│       └── configuracion/parametros · configuracion/usuarios
+├── features/<dominio>/api.ts     # hooks de datos (TanStack Query) — único punto de acceso al API
+├── features/<dominio>/*.tsx      # formularios y componentes de cada pantalla
+├── components/ui · layout        # componentes base reutilizables
+├── lib/                          # cliente HTTP con refresh de token, sesión (Zustand), formato, permisos
+└── types/api.ts                  # tipos del contrato de la API
 ```
 
----
+**Sesión:** el login guarda el token de acceso (15 min) y el de refresco (7 días) en `localStorage`; el cliente HTTP renueva el acceso automáticamente y, si el refresco falla, cierra la sesión y vuelve a `/login`.
+**Roles:** el menú y las acciones se adaptan al rol (`ADMIN`, `GESTOR_PROYECTOS`, `NOMINA`, `CONSULTA`); la API valida los permisos de todos modos.
 
-## 🚀 Quick Start
+## Despliegue en Vercel
 
-### 1. Instalar Dependencias
-```bash
-npm install
-```
+1. **Add New → Project** e importe el repositorio `escano1/gestion-proyecto-frontend` (Vercel detecta Next.js; no requiere configuración adicional).
+2. Variable de entorno (Production y Preview):
+   `NEXT_PUBLIC_API_URL = https://<servicio>.up.railway.app/api`
+3. Deploy. Luego agregue el dominio de Vercel a `CORS_ORIGINS` del servicio en Railway (p. ej. `https://gestion-proyectos.vercel.app`).
 
-### 2. Configurar Ambiente
-Crear `.env.local`:
-```
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
-```
-
-### 3. Iniciar Desarrollo
-```bash
-npm run dev
-# → http://localhost:3000
-```
-
----
-
-## 🔐 Autenticación
-
-- JWT: Access token (15 min) + Refresh token (7 días)
-- Interceptor HTTP automático
-- Zustand para estado global
-- localStorage (encriptado)
-
----
-
-## 🎨 Componentes Base
-
-- Button, Input, Select, Card, Alert, Spinner
-- TailwindCSS para estilos
-- Validación con Zod + React Hook Form
-
----
-
-## 📝 Validación
-
-### Schemas Centralizados
-```typescript
-// lib/validadores.ts
-export const registroHorasSchema = z.object({
-  cantidadHoras: z.number().min(0.5).max(12),
-  // ...
-});
-```
-
-### Validación Server
-El backend SIEMPRE valida también (seguridad).
-
----
-
-## 📱 Responsivo
-
-- Mobile first approach
-- Breakpoints: sm, md, lg, xl, 2xl
-- TailwindCSS responsive utilities
-
----
-
-## 🧪 Testing
-
-```bash
-npm test                    # Todos los tests
-npm test -- --coverage      # Con cobertura
-```
-
-**Target**: 70%+ coverage en componentes
-
----
-
-## 🚀 Comandos
-
-```bash
-npm run dev               # Desarrollo
-npm run build             # Build
-npm run start             # Run build
-npm run lint              # Linter
-npm run format            # Prettier
-npm run type-check        # TypeScript
-npm test                  # Tests
-```
-
----
-
-## 🔗 Referencias
-
-- [Next.js Docs](https://nextjs.org/docs)
-- [React Docs](https://react.dev)
-- [TailwindCSS](https://tailwindcss.com/docs)
-- [React Hook Form](https://react-hook-form.com)
-- [Zod](https://zod.dev)
-
----
-
-## 📋 Checklist Antes de Push
-
-- [ ] Tests pasando
-- [ ] TypeScript sin errores
-- [ ] Linting correcto
-- [ ] Responsivo en mobile
-- [ ] Sin console.log en production
-- [ ] Accesibilidad checkeada
-
----
-
-**Estado**: 📋 Documentación completada (desarrollo pendiente)  
-**Próximo**: Fase 0 - Setup inicial  
-**Actualizado**: 2026-10-08
+`NEXT_PUBLIC_API_URL` se incrusta en el build: si cambia la URL de la API, vuelva a desplegar.
