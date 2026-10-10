@@ -1,17 +1,7 @@
 // Presentación de periodos y parámetros legales de la nómina.
-import { formatoFecha, formatoHoras, formatoNumero, formatoPesos, formatoPorcentaje, nombrePeriodo } from "@/lib/formato";
-import type { TipoPeriodo } from "@/types/api";
+import { formatoFecha, formatoHoras, formatoNumero, formatoPesos, formatoPorcentaje } from "@/lib/formato";
 
 export const rangoFechas = (inicio: string, fin: string) => `${formatoFecha(inicio)} – ${formatoFecha(fin)}`;
-
-/**
- * Nombre del periodo a partir de sus fechas (el desprendible no trae año, mes ni quincena):
- * la quincena 1 inicia el día 1 y la 2 el día 16.
- */
-export function periodoDesdeFechas(tipoPeriodo: TipoPeriodo, fechaInicio: string): string {
-  const [anio, mes, dia] = fechaInicio.split("-").map(Number);
-  return nombrePeriodo({ tipoPeriodo, anio, mes, quincena: tipoPeriodo === "QUINCENAL" ? (dia <= 15 ? 1 : 2) : null });
-}
 
 type Formato = (valor: number) => string;
 

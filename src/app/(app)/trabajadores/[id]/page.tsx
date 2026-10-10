@@ -13,7 +13,7 @@ import { mensajeError } from "@/lib/errores";
 import { formatoFecha, formatoHoras, formatoPesos } from "@/lib/formato";
 import { TIPOS_CONTRATO, TIPOS_JORNADA, TIPOS_SALARIO } from "@/lib/etiquetas";
 import { Button } from "@/components/ui/button";
-import { Badge, Card, CardHeader, DataList, EmptyState, ErrorState, PageHeader, Spinner } from "@/components/ui/display";
+import { Card, CardHeader, DataList, EmptyState, ErrorState, PageHeader, Spinner } from "@/components/ui/display";
 import { EstadoBadge } from "@/components/ui/estado-badge";
 import { Table, TBody, Td, Th, Tr } from "@/components/ui/table";
 
@@ -65,8 +65,6 @@ export default function PaginaTrabajador() {
                   valor: t.tipoJornada === "PARCIAL" ? `Parcial · ${t.horasSemanales} h/semana` : TIPOS_JORNADA.COMPLETA,
                 },
                 { etiqueta: "Auxilio de transporte", valor: t.aplicaAuxilioTransporte ? "Aplica (si devenga ≤ 2 SMMLV)" : "No aplica" },
-                { etiqueta: "Ingreso", valor: formatoFecha(t.fechaIngreso) },
-                { etiqueta: "Retiro", valor: formatoFecha(t.fechaRetiro) },
                 { etiqueta: "EPS", valor: t.eps ?? "—" },
                 { etiqueta: "Fondo de pensión", valor: t.fondoPension ?? "—" },
                 { etiqueta: "Teléfono", valor: t.telefono ?? "—" },
@@ -77,7 +75,7 @@ export default function PaginaTrabajador() {
         </Card>
 
         <Card>
-          <CardHeader titulo="Historial de proyectos" descripcion="Asignaciones del trabajador, más recientes primero" />
+          <CardHeader titulo="Historial de proyectos" descripcion="Proyectos en los que está asignado" />
           {historial.isPending ? (
             <Spinner />
           ) : historial.isError ? (
@@ -90,9 +88,6 @@ export default function PaginaTrabajador() {
                 <tr>
                   <Th>Proyecto</Th>
                   <Th>Rol</Th>
-                  <Th>Desde</Th>
-                  <Th>Hasta</Th>
-                  <Th />
                 </tr>
               </thead>
               <TBody>
@@ -104,9 +99,6 @@ export default function PaginaTrabajador() {
                       </Link>
                     </Td>
                     <Td>{a.rolEnProyecto ?? "—"}</Td>
-                    <Td>{formatoFecha(a.fechaInicio)}</Td>
-                    <Td>{a.fechaFin ? formatoFecha(a.fechaFin) : "Indefinida"}</Td>
-                    <Td>{a.vigente && <Badge tono="verde">Vigente</Badge>}</Td>
                   </Tr>
                 ))}
               </TBody>

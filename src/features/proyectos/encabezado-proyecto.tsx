@@ -24,16 +24,20 @@ export function EncabezadoProyecto({ proyecto: p, onEditar }: Props) {
           </div>
           <h1 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">{p.nombre}</h1>
           <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
-            <li className="flex items-center gap-1.5">
-              <UserRound className="size-4 text-slate-400" aria-hidden />
-              <span className="sr-only">Cliente:</span>
-              {p.cliente}
-            </li>
-            <li className="flex items-center gap-1.5">
-              <MapPin className="size-4 text-slate-400" aria-hidden />
-              <span className="sr-only">Ubicación:</span>
-              {p.ubicacion}
-            </li>
+            {p.cliente && (
+              <li className="flex items-center gap-1.5">
+                <UserRound className="size-4 text-slate-400" aria-hidden />
+                <span className="sr-only">Cliente:</span>
+                {p.cliente}
+              </li>
+            )}
+            {p.ubicacion && (
+              <li className="flex items-center gap-1.5">
+                <MapPin className="size-4 text-slate-400" aria-hidden />
+                <span className="sr-only">Ubicación:</span>
+                {p.ubicacion}
+              </li>
+            )}
             <li className="flex items-center gap-1.5">
               <CalendarDays className="size-4 text-slate-400" aria-hidden />
               <span>

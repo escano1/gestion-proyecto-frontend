@@ -41,9 +41,6 @@ export interface DatosTrabajador {
   tipoContrato: TipoContrato;
   tipoJornada: TipoJornada;
   horasSemanales?: number | null;
-  aplicaAuxilioTransporte: boolean;
-  fechaIngreso: string;
-  fechaRetiro?: string | null;
   estado: EstadoTrabajador;
   email?: string | null;
   telefono?: string | null;
@@ -61,6 +58,19 @@ export function useGuardarTrabajador() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: claveTrabajadores });
       qc.invalidateQueries({ queryKey: ["nomina"] });
+      qc.invalidateQueries({ queryKey: ["reportes"] });
+    },
+  });
+}
+
+export function useEliminarTrabajador() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/trabajadores/${id}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: claveTrabajadores });
       qc.invalidateQueries({ queryKey: ["reportes"] });
     },
   });
@@ -87,8 +97,8 @@ export function useProyecto(id: number | undefined) {
 export interface DatosProyecto {
   codigo: string;
   nombre: string;
-  cliente: string;
-  ubicacion: string;
+  cliente?: string | null;
+  ubicacion?: string | null;
   descripcion?: string | null;
   fechaInicio: string;
   fechaFinPlaneada?: string | null;
@@ -111,15 +121,25 @@ export function useGuardarProyecto() {
   });
 }
 
+export function useEliminarProyecto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/proyectos/${id}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: claveProyectos });
+      qc.invalidateQueries({ queryKey: ["reportes"] });
+    },
+  });
+}
+
 // --- Asignaciones ---
 export const claveAsignaciones = ["asignaciones"] as const;
 
 export interface FiltroAsignaciones {
   proyectoId?: number;
   trabajadorId?: number;
-  vigenteEn?: string;
-  desde?: string;
-  hasta?: string;
 }
 
 export function useAsignaciones(filtro: FiltroAsignaciones, habilitado = true) {
@@ -141,8 +161,6 @@ export function useHistorialAsignaciones(trabajadorId: number | undefined) {
 export interface DatosAsignacion {
   trabajadorId?: number;
   proyectoId?: number;
-  fechaInicio?: string;
-  fechaFin?: string | null;
   rolEnProyecto?: string | null;
 }
 

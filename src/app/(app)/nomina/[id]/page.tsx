@@ -29,7 +29,6 @@ import { useDescarga } from "@/features/liquidacion/use-descarga";
 import { useSesion } from "@/lib/auth-store";
 import { esAdmin, puedeEscribir, puedeVerNomina } from "@/lib/permisos";
 import { mensajeError } from "@/lib/errores";
-import { TIPOS_PERIODO } from "@/lib/etiquetas";
 import { formatoFechaHora, formatoNumero, formatoPesos, nombrePeriodo } from "@/lib/formato";
 import { Button } from "@/components/ui/button";
 import { Alertas, Badge, Card, CardHeader, EmptyState, ErrorState, PageHeader, Spinner, StatCard } from "@/components/ui/display";
@@ -106,7 +105,7 @@ function DetalleLiquidacion() {
       </Link>
       <PageHeader
         titulo={`Nómina · ${periodo}`}
-        descripcion={`${TIPOS_PERIODO[l.tipoPeriodo]} · ${rangoFechas(l.fechaInicio, l.fechaFin)}`}
+        descripcion="Liquidación semanal"
         acciones={
           <>
             <Button
@@ -248,7 +247,7 @@ function TablaNominas({ liquidacion }: { liquidacion: LiquidacionDetalle }) {
       {nominas.length === 0 ? (
         <EmptyState
           titulo="Sin trabajadores en el periodo"
-          descripcion="No hay trabajadores con vínculo en el periodo (los de salario por hora requieren horas registradas)."
+          descripcion="No hay trabajadores activos en el periodo (los de salario por hora requieren horas registradas)."
         />
       ) : (
         <Table>

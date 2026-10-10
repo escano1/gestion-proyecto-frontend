@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, ChevronDown, FileText } from "lucide-react";
 import { descargarDesprendiblePdf, useDesprendible } from "@/features/nomina/api";
-import { agruparParametros, periodoDesdeFechas, rangoFechas } from "@/features/liquidacion/formato-nomina";
+import { agruparParametros, rangoFechas } from "@/features/liquidacion/formato-nomina";
 import { SinPermisoNomina } from "@/features/liquidacion/sin-permiso";
 import { TablaConceptos } from "@/features/liquidacion/tabla-conceptos";
 import { useDescarga } from "@/features/liquidacion/use-descarga";
 import { useSesion } from "@/lib/auth-store";
 import { puedeVerNomina } from "@/lib/permisos";
 import { mensajeError } from "@/lib/errores";
-import { TIPOS_DOCUMENTO, TIPOS_PERIODO, TIPOS_SALARIO } from "@/lib/etiquetas";
-import { formatoNumero, formatoPesos } from "@/lib/formato";
+import { TIPOS_DOCUMENTO, TIPOS_SALARIO } from "@/lib/etiquetas";
+import { formatoNumero, formatoPesos, nombrePeriodo } from "@/lib/formato";
 import { Button } from "@/components/ui/button";
 import { Alertas, Card, CardHeader, DataList, ErrorState, PageHeader, Spinner } from "@/components/ui/display";
 import { EstadoBadge } from "@/components/ui/estado-badge";
@@ -35,7 +35,7 @@ function ComprobantePago() {
   if (consulta.isError) return <ErrorState mensaje={mensajeError(consulta.error)} reintentar={() => consulta.refetch()} />;
 
   const d = consulta.data;
-  const periodo = periodoDesdeFechas(d.liquidacion.tipoPeriodo, d.liquidacion.fechaInicio);
+  const periodo = nombrePeriodo(d.liquidacion);
   const devengados = d.conceptos.filter((c) => c.tipo === "DEVENGADO");
   const deducciones = d.conceptos.filter((c) => c.tipo === "DEDUCCION");
   const gruposParametros = agruparParametros(d.parametros);
@@ -83,8 +83,7 @@ function ComprobantePago() {
                 },
                 { etiqueta: "Valor hora ordinaria", valor: formatoPesos(d.valorHora) },
                 { etiqueta: "Tipo de salario", valor: TIPOS_SALARIO[d.tipoSalario] },
-                { etiqueta: "Periodo", valor: `${TIPOS_PERIODO[d.liquidacion.tipoPeriodo]} · ${periodo}` },
-                { etiqueta: "Fechas", valor: rangoFechas(d.liquidacion.fechaInicio, d.liquidacion.fechaFin) },
+                { etiqueta: "Periodo", valor: rangoFechas(d.liquidacion.fechaInicio, d.liquidacion.fechaFin) },
                 { etiqueta: "Días laborados", valor: formatoNumero(d.diasLaborados) },
                 { etiqueta: "IBC (ingreso base de cotización)", valor: formatoPesos(d.ibc) },
               ]}

@@ -8,22 +8,15 @@ import { useAsignaciones, useEliminarAsignacion } from "@/features/personal/api"
 import { useSesion } from "@/lib/auth-store";
 import { puedeEscribir } from "@/lib/permisos";
 import { mensajeError } from "@/lib/errores";
-import { formatoFecha } from "@/lib/formato";
 import { Button } from "@/components/ui/button";
-import { Badge, Card, CardHeader, EmptyState, ErrorState, Spinner } from "@/components/ui/display";
+import { Card, CardHeader, EmptyState, ErrorState, Spinner } from "@/components/ui/display";
 import { ConfirmDialog } from "@/components/ui/modal";
 import { Table, TBody, Td, Th, Tr } from "@/components/ui/table";
 import type { Asignacion } from "@/types/api";
 import { AsignacionForm } from "./asignacion-form";
 
-/** Vigentes primero; luego por nombre del trabajador y la más reciente. */
 const ordenar = (lista: Asignacion[]) =>
-  [...lista].sort(
-    (a, b) =>
-      Number(b.vigente) - Number(a.vigente) ||
-      a.trabajador.nombre.localeCompare(b.trabajador.nombre, "es") ||
-      b.fechaInicio.localeCompare(a.fechaInicio),
-  );
+  [...lista].sort((a, b) => a.trabajador.nombre.localeCompare(b.trabajador.nombre, "es"));
 
 export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
   const rol = useSesion((s) => s.usuario?.rol);
@@ -33,7 +26,6 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
   const [porEliminar, setPorEliminar] = useState<Asignacion | null>(null);
 
   const editable = puedeEscribir(rol, "asignaciones");
-  const vigentes = consulta.data?.filter((a) => a.vigente).length ?? 0;
 
   const confirmarEliminar = () => {
     if (!porEliminar) return;
@@ -42,7 +34,7 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
         toast.success("Asignación eliminada");
         setPorEliminar(null);
       },
-      // 409 si el trabajador ya tiene horas registradas en el proyecto dentro del rango.
+      // 409 si el trabajador ya tiene horas registradas en el proyecto.
       onError: (e) => {
         toast.error(mensajeError(e));
         setPorEliminar(null);
@@ -54,7 +46,7 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
     <Card>
       <CardHeader
         titulo="Equipo del proyecto"
-        descripcion={consulta.data ? `${vigentes} vigente${vigentes === 1 ? "" : "s"} de ${consulta.data.length} asignaciones` : undefined}
+        descripcion={consulta.data ? `${consulta.data.length} trabajador${consulta.data.length === 1 ? "" : "es"} asignado${consulta.data.length === 1 ? "" : "s"}` : undefined}
         acciones={
           editable && (
             <Button tamano="sm" onClick={() => setEdicion({})}>
@@ -79,9 +71,6 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
             <tr>
               <Th>Trabajador</Th>
               <Th>Rol en el proyecto</Th>
-              <Th>Desde</Th>
-              <Th>Hasta</Th>
-              <Th>Estado</Th>
               {editable && <Th className="w-20" />}
             </tr>
           </thead>
@@ -97,9 +86,6 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
                   </p>
                 </Td>
                 <Td>{a.rolEnProyecto ?? "—"}</Td>
-                <Td className="whitespace-nowrap">{formatoFecha(a.fechaInicio)}</Td>
-                <Td className="whitespace-nowrap">{a.fechaFin ? formatoFecha(a.fechaFin) : "Indefinida"}</Td>
-                <Td>{a.vigente ? <Badge tono="verde">Vigente</Badge> : <Badge>No vigente</Badge>}</Td>
                 {editable && (
                   <Td>
                     <div className="flex justify-end gap-1">
@@ -138,9 +124,8 @@ export function PestanaEquipo({ proyectoId }: { proyectoId: number }) {
         mensaje={
           porEliminar && (
             <>
-              ¿Eliminar la asignación de <strong>{porEliminar.trabajador.nombre}</strong> (
-              {formatoFecha(porEliminar.fechaInicio)} – {porEliminar.fechaFin ? formatoFecha(porEliminar.fechaFin) : "indefinida"}
-              )? No es posible si ya tiene horas registradas en ese rango; en ese caso, edite la fecha de fin.
+              ¿Quitar a <strong>{porEliminar.trabajador.nombre}</strong> del proyecto? No es posible si ya tiene
+              horas registradas en él.
             </>
           )
         }

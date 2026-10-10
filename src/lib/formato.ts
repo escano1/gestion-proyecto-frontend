@@ -44,9 +44,9 @@ export function formatoFechaHora(iso: string | null | undefined): string {
 
 export const nombreMes = (mes: number) => MESES[mes - 1] ?? String(mes);
 
-export function nombrePeriodo(p: { tipoPeriodo: string; anio: number; mes: number; quincena: number | null }) {
-  const base = `${nombreMes(p.mes)} ${p.anio}`;
-  return p.tipoPeriodo === "QUINCENAL" ? `Quincena ${p.quincena} · ${base}` : `Mes · ${base}`;
+/** "Semana 05/10/2026 – 11/10/2026" (la nómina se liquida por semana, de lunes a domingo). */
+export function nombrePeriodo(p: { fechaInicio: string; fechaFin: string }) {
+  return `Semana ${formatoFecha(p.fechaInicio)} – ${formatoFecha(p.fechaFin)}`;
 }
 
 export function formatoTamano(bytes: number): string {

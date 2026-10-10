@@ -4,13 +4,10 @@ import { api, parametros } from "@/lib/api";
 import type {
   AgrupacionHoras,
   AlertaHoras,
-  AvanceProyectoReporte,
   Dashboard,
-  EstadoProyecto,
   ReporteCostosProyectos,
   ReporteHoras,
   ReporteNominaPeriodos,
-  ReportePendientes,
   ResumenProyecto,
 } from "@/types/api";
 
@@ -62,21 +59,6 @@ export function useReporteNominaPeriodos(anio: number, habilitado = true) {
     queryFn: async () =>
       (await api.get<ReporteNominaPeriodos>("/reportes/nomina-periodos", { params: { anio } })).data,
     enabled: habilitado,
-  });
-}
-
-export function usePendientes() {
-  return useQuery({
-    queryKey: clave("pendientes"),
-    queryFn: async () => (await api.get<ReportePendientes>("/reportes/pendientes")).data,
-  });
-}
-
-export function useAvanceProyectos(estado: EstadoProyecto = "ACTIVO") {
-  return useQuery({
-    queryKey: clave("avance-proyectos", estado),
-    queryFn: async () =>
-      (await api.get<AvanceProyectoReporte[]>("/reportes/avance-proyectos", { params: { estado } })).data,
   });
 }
 

@@ -1,4 +1,5 @@
 // Lógica pura de la grilla semanal de captura de horas (sin React ni llamadas al API).
+import { inicioSemana, sumarDias } from "@/lib/fechas";
 import type {
   Asignacion,
   CodigoTipoHora,
@@ -185,41 +186,32 @@ export function tiposConDatos(...fuentes: Celdas[]): Map<number, Set<number>> {
   return resultado;
 }
 
-export interface Rango {
-  fechaInicio: string;
-  fechaFin: string | null;
-}
-
-export const fechaEnRangos = (fecha: string, rangos: Rango[]) =>
-  rangos.some((r) => r.fechaInicio <= fecha && (r.fechaFin === null || fecha <= r.fechaFin));
-
-/** Un día es editable si no es futuro y alguna asignación del trabajador al proyecto lo cubre. */
-export const diaEditable = (fecha: string, rangos: Rango[], hoy: string) => fecha <= hoy && fechaEnRangos(fecha, rangos);
+/** Un día es editable si es de la semana en curso o anterior (sábado y domingo incluidos) y el trabajador está asignado. */
+export const diaEditable = (fecha: string, asignado: boolean, hoy: string) =>
+  fecha <= sumarDias(inicioSemana(hoy), 6) && asignado;
 
 export interface FilaTrabajador {
   id: number;
   nombre: string;
   numeroDocumento: string;
   cargo: string | null;
-  rangos: Rango[];
+  asignado: boolean;
 }
 
 /**
- * Trabajadores de la grilla: los asignados en la semana (con sus rangos) más quienes tengan
- * registros sin asignación vigente (se muestran en solo lectura). Orden alfabético.
+ * Trabajadores de la grilla: los asignados al proyecto más quienes tengan registros en la semana
+ * sin estar asignados (se muestran en solo lectura). Orden alfabético.
  */
 export function trabajadoresGrilla(asignaciones: Asignacion[], registros: RegistroHoras[]): FilaTrabajador[] {
   const filas = new Map<number, FilaTrabajador>();
   for (const a of asignaciones) {
-    const fila = filas.get(a.trabajadorId) ?? {
+    filas.set(a.trabajadorId, {
       id: a.trabajadorId,
       nombre: a.trabajador.nombre,
       numeroDocumento: a.trabajador.numeroDocumento,
       cargo: a.trabajador.cargo,
-      rangos: [],
-    };
-    fila.rangos.push({ fechaInicio: a.fechaInicio, fechaFin: a.fechaFin });
-    filas.set(a.trabajadorId, fila);
+      asignado: true,
+    });
   }
   for (const r of registros) {
     if (!filas.has(r.trabajador.id)) {
@@ -228,7 +220,7 @@ export function trabajadoresGrilla(asignaciones: Asignacion[], registros: Regist
         nombre: r.trabajador.nombre,
         numeroDocumento: r.trabajador.numeroDocumento,
         cargo: null,
-        rangos: [],
+        asignado: false,
       });
     }
   }

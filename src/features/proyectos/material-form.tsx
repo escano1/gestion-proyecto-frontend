@@ -6,32 +6,28 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/form-controls";
-import { useGuardarMaterial, type DatosMaterial } from "@/features/operacion/api";
+import { Field, Input } from "@/components/ui/form-controls";
+import { useGuardarMaterial } from "@/features/operacion/api";
 import { mensajeError } from "@/lib/errores";
-import { ESTADOS } from "@/lib/etiquetas";
-import { fechaOpcional, numeroOpcional, numeroRequerido, textoOpcional, textoRequerido } from "@/lib/validacion";
-import type { EstadoMaterial, Material } from "@/types/api";
+import { numeroRequerido, textoRequerido } from "@/lib/validacion";
+import type { Material } from "@/types/api";
 import { tieneMaxDosDecimales } from "./utilidades";
 
 const esquema = z.object({
   nombre: textoRequerido("Ingrese el nombre del material", 150),
-  unidadMedida: textoRequerido("Ingrese la unidad", 20),
   cantidadSolicitada: numeroRequerido(
     z
       .number({ error: "Ingrese la cantidad" })
       .positive("Debe ser mayor a 0")
       .refine(tieneMaxDosDecimales, "Máximo 2 decimales"),
   ),
-  fechaRequerida: fechaOpcional(),
-  descripcion: textoOpcional(5000),
-  observaciones: textoOpcional(5000),
-  // Solo en edición:
-  estado: z.enum(["PENDIENTE", "SOLICITADO", "ENTREGADO", "INSTALADO"]),
-  cantidadEntregada: numeroOpcional(
-    z.number({ error: "Cantidad inválida" }).min(0, "No puede ser negativa").refine(tieneMaxDosDecimales, "Máximo 2 decimales"),
+  unidadMedida: textoRequerido("Ingrese la unidad", 20),
+  precioUnitario: numeroRequerido(
+    z
+      .number({ error: "Ingrese el precio" })
+      .min(0, "No puede ser negativo")
+      .refine(tieneMaxDosDecimales, "Máximo 2 decimales"),
   ),
-  fechaEntrega: fechaOpcional(),
 });
 
 type Entrada = z.input<typeof esquema>;
@@ -40,14 +36,9 @@ type Salida = z.output<typeof esquema>;
 function valoresIniciales(m?: Material): Entrada {
   return {
     nombre: m?.nombre ?? "",
-    unidadMedida: m?.unidadMedida ?? "",
     cantidadSolicitada: m?.cantidadSolicitada,
-    fechaRequerida: m?.fechaRequerida ?? "",
-    descripcion: m?.descripcion ?? "",
-    observaciones: m?.observaciones ?? "",
-    estado: m?.estado ?? "PENDIENTE",
-    cantidadEntregada: m?.cantidadEntregada ?? 0,
-    fechaEntrega: m?.fechaEntrega ?? "",
+    unidadMedida: m?.unidadMedida ?? "",
+    precioUnitario: m?.precioUnitario,
   };
 }
 
@@ -68,11 +59,7 @@ export function MaterialForm({ proyectoId, material, onCerrar }: Props) {
     values: valoresIniciales(material),
   });
 
-  const enviar = handleSubmit(({ estado, cantidadEntregada, fechaEntrega, ...comunes }) => {
-    const datos: DatosMaterial = material
-      ? // Sin fecha de entrega, el API asigna hoy al pasar a ENTREGADO/INSTALADO.
-        { ...comunes, estado, cantidadEntregada: cantidadEntregada ?? 0, fechaEntrega: fechaEntrega ?? null }
-      : comunes;
+  const enviar = handleSubmit((datos) => {
     guardar.mutate(
       { id: material?.id, datos },
       {
@@ -90,7 +77,6 @@ export function MaterialForm({ proyectoId, material, onCerrar }: Props) {
       abierto
       onCerrar={onCerrar}
       titulo={material ? "Editar material" : "Nuevo material"}
-      descripcion={material ? undefined : "Se registra como pendiente con fecha de solicitud de hoy"}
       pie={
         <>
           <Button variante="secundario" onClick={onCerrar}>
@@ -122,52 +108,18 @@ export function MaterialForm({ proyectoId, material, onCerrar }: Props) {
         <Field label="Unidad" error={errors.unidadMedida?.message} ayuda="m, und, kg, rollo…" className="sm:col-span-2">
           {(id) => <Input id={id} aria-invalid={!!errors.unidadMedida} {...register("unidadMedida")} />}
         </Field>
-        <Field label="Fecha requerida" error={errors.fechaRequerida?.message} className="sm:col-span-2">
-          {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaRequerida} {...register("fechaRequerida")} />}
-        </Field>
-
-        {material && (
-          <>
-            <Field label="Estado" error={errors.estado?.message} className="sm:col-span-2">
-              {(id) => (
-                <Select id={id} {...register("estado")}>
-                  {(Object.keys(ESTADOS.material) as EstadoMaterial[]).map((estado) => (
-                    <option key={estado} value={estado}>
-                      {ESTADOS.material[estado][0]}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field label="Cantidad entregada" error={errors.cantidadEntregada?.message} className="sm:col-span-2">
-              {(id) => (
-                <Input
-                  id={id}
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  step="any"
-                  aria-invalid={!!errors.cantidadEntregada}
-                  {...register("cantidadEntregada", { valueAsNumber: true })}
-                />
-              )}
-            </Field>
-            <Field
-              label="Fecha de entrega"
-              error={errors.fechaEntrega?.message}
-              ayuda="Vacía = hoy al marcar entregado"
-              className="sm:col-span-2"
-            >
-              {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaEntrega} {...register("fechaEntrega")} />}
-            </Field>
-          </>
-        )}
-
-        <Field label="Descripción" error={errors.descripcion?.message} className="sm:col-span-6">
-          {(id) => <Textarea id={id} rows={2} aria-invalid={!!errors.descripcion} {...register("descripcion")} />}
-        </Field>
-        <Field label="Observaciones" error={errors.observaciones?.message} className="sm:col-span-6">
-          {(id) => <Textarea id={id} rows={2} aria-invalid={!!errors.observaciones} {...register("observaciones")} />}
+        <Field label="Precio unitario (COP)" error={errors.precioUnitario?.message} className="sm:col-span-2">
+          {(id) => (
+            <Input
+              id={id}
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="any"
+              aria-invalid={!!errors.precioUnitario}
+              {...register("precioUnitario", { valueAsNumber: true })}
+            />
+          )}
         </Field>
       </form>
     </Modal>

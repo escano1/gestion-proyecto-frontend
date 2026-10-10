@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { agruparParametros, periodoDesdeFechas, rangoFechas } from "./formato-nomina";
+import { agruparParametros, rangoFechas } from "./formato-nomina";
 
 describe("formato de nómina", () => {
-  it("deriva el nombre del periodo desde sus fechas", () => {
-    expect(periodoDesdeFechas("QUINCENAL", "2026-10-01")).toBe("Quincena 1 · octubre 2026");
-    expect(periodoDesdeFechas("QUINCENAL", "2026-10-16")).toBe("Quincena 2 · octubre 2026");
-    expect(periodoDesdeFechas("MENSUAL", "2026-02-01")).toBe("Mes · febrero 2026");
-    expect(rangoFechas("2026-10-01", "2026-10-15")).toBe("01/10/2026 – 15/10/2026");
+  it("formatea el rango de fechas", () => {
+    expect(rangoFechas("2026-10-05", "2026-10-11")).toBe("05/10/2026 – 11/10/2026");
   });
 
   it("agrupa y formatea los parámetros legales aplicados", () => {

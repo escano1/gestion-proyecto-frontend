@@ -2,17 +2,19 @@
 
 import { useDeferredValue, useState } from "react";
 import Link from "next/link";
-import { Pencil, Plus, Search } from "lucide-react";
-import { useTrabajadores } from "@/features/personal/api";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useEliminarTrabajador, useTrabajadores } from "@/features/personal/api";
 import { TrabajadorForm } from "@/features/personal/trabajador-form";
 import { useSesion } from "@/lib/auth-store";
 import { puedeEscribir } from "@/lib/permisos";
-import { formatoFecha, formatoPesos } from "@/lib/formato";
+import { formatoPesos } from "@/lib/formato";
 import { mensajeError } from "@/lib/errores";
 import { Button } from "@/components/ui/button";
 import { Card, EmptyState, ErrorState, PageHeader, Spinner } from "@/components/ui/display";
 import { EstadoBadge } from "@/components/ui/estado-badge";
 import { Input, Select } from "@/components/ui/form-controls";
+import { ConfirmDialog } from "@/components/ui/modal";
 import { Table, TBody, Td, Th, Tr } from "@/components/ui/table";
 import type { EstadoTrabajador, Trabajador } from "@/types/api";
 
@@ -23,8 +25,21 @@ export default function PaginaTrabajadores() {
   const q = useDeferredValue(busqueda.trim());
   const consulta = useTrabajadores({ q: q || undefined, estado: estado || undefined });
   const [edicion, setEdicion] = useState<{ abierto: boolean; trabajador?: Trabajador }>({ abierto: false });
+  const [porEliminar, setPorEliminar] = useState<Trabajador | null>(null);
+  const eliminar = useEliminarTrabajador();
 
   const editable = puedeEscribir(rol, "trabajadores");
+
+  const confirmarEliminar = () => {
+    if (!porEliminar) return;
+    eliminar.mutate(porEliminar.id, {
+      onSuccess: () => {
+        toast.success("Trabajador eliminado");
+        setPorEliminar(null);
+      },
+      onError: (e) => toast.error(mensajeError(e)),
+    });
+  };
 
   return (
     <>
@@ -78,9 +93,8 @@ export default function PaginaTrabajadores() {
                 <Th>Documento</Th>
                 <Th>Cargo</Th>
                 <Th alinear="derecha">Salario</Th>
-                <Th>Ingreso</Th>
                 <Th>Estado</Th>
-                {editable && <Th className="w-12" />}
+                {editable && <Th className="w-20" />}
               </tr>
             </thead>
             <TBody>
@@ -99,7 +113,6 @@ export default function PaginaTrabajadores() {
                     {formatoPesos(t.salarioBase)}
                     {t.tipoSalario === "POR_HORA" && <span className="text-xs text-slate-500"> /h</span>}
                   </Td>
-                  <Td className="whitespace-nowrap">{formatoFecha(t.fechaIngreso)}</Td>
                   <Td>
                     <EstadoBadge dominio="trabajador" estado={t.estado} />
                   </Td>
@@ -112,6 +125,14 @@ export default function PaginaTrabajadores() {
                         aria-label={`Editar ${t.nombre}`}
                       >
                         <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variante="fantasma"
+                        tamano="sm"
+                        onClick={() => setPorEliminar(t)}
+                        aria-label={`Eliminar ${t.nombre}`}
+                      >
+                        <Trash2 className="size-4 text-red-600" />
                       </Button>
                     </Td>
                   )}
@@ -126,6 +147,22 @@ export default function PaginaTrabajadores() {
         abierto={edicion.abierto}
         trabajador={edicion.trabajador}
         onCerrar={() => setEdicion({ abierto: false })}
+      />
+
+      <ConfirmDialog
+        abierto={porEliminar !== null}
+        titulo="Eliminar trabajador"
+        mensaje={
+          <>
+            ¿Eliminar a <strong>{porEliminar?.nombre}</strong>? Esta acción no se puede deshacer: también se
+            eliminarán sus horas registradas, asignaciones y desprendibles de nómina.
+          </>
+        }
+        textoConfirmar="Eliminar"
+        peligroso
+        cargando={eliminar.isPending}
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setPorEliminar(null)}
       />
     </>
   );

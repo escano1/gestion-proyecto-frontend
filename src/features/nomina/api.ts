@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, parametros } from "@/lib/api";
 import { descargarArchivo } from "@/lib/descargas";
-import type { Desprendible, LiquidacionDetalle, LiquidacionResumen, TipoPeriodo } from "@/types/api";
+import type { Desprendible, LiquidacionDetalle, LiquidacionResumen } from "@/types/api";
 
 export const claveNomina = ["nomina"] as const;
 
@@ -33,7 +33,8 @@ export function useDesprendible(id: number | undefined) {
 export function useCrearLiquidacion() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (datos: { tipoPeriodo: TipoPeriodo; anio: number; mes: number; quincena?: 1 | 2 }) =>
+    /** `fecha`: cualquier día de la semana a liquidar. */
+    mutationFn: async (datos: { fecha: string }) =>
       (await api.post<LiquidacionDetalle>("/nomina/liquidaciones", datos)).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: claveNomina });

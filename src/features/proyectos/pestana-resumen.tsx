@@ -1,18 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, PackageOpen, TrendingUp, Wallet } from "lucide-react";
+import { Clock, PackageSearch, Wallet } from "lucide-react";
 import { useResumenProyecto } from "@/features/reportes/api";
 import { mensajeError } from "@/lib/errores";
 import { formatoAvance, formatoHoras, formatoPesos } from "@/lib/formato";
 import { Card, CardHeader, EmptyState, ErrorState, Spinner, StatCard } from "@/components/ui/display";
-import { EstadoBadge } from "@/components/ui/estado-badge";
 import { Table, TBody, Td, Th, Tr } from "@/components/ui/table";
 import { BarraProgreso } from "./barra-progreso";
 import { GraficoHorasTipo } from "./grafico-horas-tipo";
 import { porcentajeEjecucion } from "./utilidades";
-
-const plural = (n: number, singular: string, varios: string) => `${n} ${n === 1 ? singular : varios}`;
 
 export function PestanaResumen({ proyectoId }: { proyectoId: number }) {
   const consulta = useResumenProyecto(proyectoId);
@@ -26,15 +23,14 @@ export function PestanaResumen({ proyectoId }: { proyectoId: number }) {
     );
   }
 
-  const { proyecto, horas, costoManoObra, costoPorTrabajador, avance, pendientes } = consulta.data;
+  const { proyecto, horas, costoManoObra, costoPorTrabajador, costoMateriales } = consulta.data;
   const ejecucion = porcentajeEjecucion(costoManoObra, proyecto.presupuesto);
   const sobrecosto = ejecucion !== null && ejecucion > 100;
-  const totalPendientes = pendientes.materiales + pendientes.herramientas;
   const hayHoras = horas.porTipo.some((t) => t.horas > 0);
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           titulo="Horas registradas"
           valor={formatoHoras(horas.total)}
@@ -60,26 +56,10 @@ export function PestanaResumen({ proyectoId }: { proyectoId: number }) {
           }
         />
         <StatCard
-          titulo="Avance real"
-          valor={formatoAvance(avance.avanceReal)}
-          icono={<TrendingUp className="size-5" aria-hidden />}
-          detalle={
-            <span className="flex flex-wrap items-center gap-2">
-              Planeado {formatoAvance(avance.avancePlaneado)}
-              <EstadoBadge dominio="avance" estado={avance.estado} />
-            </span>
-          }
-        />
-        <StatCard
-          titulo="Pendientes"
-          valor={totalPendientes}
-          tono={totalPendientes > 0 ? "alerta" : "normal"}
-          icono={<PackageOpen className="size-5" aria-hidden />}
-          detalle={`${plural(pendientes.materiales, "material sin entregar", "materiales sin entregar")} · ${plural(
-            pendientes.herramientas,
-            "herramienta sin devolver",
-            "herramientas sin devolver",
-          )}`}
+          titulo="Costo de materiales"
+          valor={formatoPesos(costoMateriales)}
+          icono={<PackageSearch className="size-5" aria-hidden />}
+          detalle="Precio × cantidad de cada material"
         />
       </div>
       <p className="-mt-3 text-xs text-slate-500">

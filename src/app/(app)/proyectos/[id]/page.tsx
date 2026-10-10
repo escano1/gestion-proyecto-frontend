@@ -7,10 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import { useProyecto } from "@/features/personal/api";
 import { EncabezadoProyecto } from "@/features/proyectos/encabezado-proyecto";
 import { ProyectoForm } from "@/features/proyectos/proyecto-form";
-import { PestanaAvance } from "@/features/proyectos/pestana-avance";
-import { PestanaBitacora } from "@/features/proyectos/pestana-bitacora";
 import { PestanaEquipo } from "@/features/proyectos/pestana-equipo";
-import { PestanaHerramientas } from "@/features/proyectos/pestana-herramientas";
+import { PestanaGastos } from "@/features/proyectos/pestana-gastos";
 import { PestanaMateriales } from "@/features/proyectos/pestana-materiales";
 import { PestanaResumen } from "@/features/proyectos/pestana-resumen";
 import { useSesion } from "@/lib/auth-store";
@@ -23,9 +21,7 @@ const PESTANAS = [
   { id: "resumen", etiqueta: "Resumen" },
   { id: "equipo", etiqueta: "Equipo" },
   { id: "materiales", etiqueta: "Materiales" },
-  { id: "herramientas", etiqueta: "Herramientas" },
-  { id: "avance", etiqueta: "Avance" },
-  { id: "bitacora", etiqueta: "Bitácora" },
+  { id: "gastos", etiqueta: "Gastos" },
 ] as const;
 
 type Pestana = (typeof PESTANAS)[number]["id"];
@@ -83,9 +79,7 @@ export default function PaginaProyecto() {
         {pestana === "resumen" && <PestanaResumen proyectoId={p.id} />}
         {pestana === "equipo" && <PestanaEquipo proyectoId={p.id} />}
         {pestana === "materiales" && <PestanaMateriales proyectoId={p.id} />}
-        {pestana === "herramientas" && <PestanaHerramientas proyectoId={p.id} />}
-        {pestana === "avance" && <PestanaAvance proyectoId={p.id} />}
-        {pestana === "bitacora" && <PestanaBitacora proyectoId={p.id} />}
+        {pestana === "gastos" && <PestanaGastos proyectoId={p.id} />}
       </section>
 
       {editando && <ProyectoForm proyecto={p} onCerrar={() => setEditando(false)} />}

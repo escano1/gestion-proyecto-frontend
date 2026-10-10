@@ -6,23 +6,19 @@ import { ReporteHorasTab } from "@/features/reportes-ui/tab-horas";
 import { CostosProyectosTab } from "@/features/reportes-ui/tab-costos";
 import { AlertasTab } from "@/features/reportes-ui/tab-alertas";
 import { NominaPeriodosTab } from "@/features/reportes-ui/tab-nomina";
-import { PendientesTab } from "@/features/reportes-ui/tab-pendientes";
-import { AvanceProyectosTab } from "@/features/reportes-ui/tab-avance";
 import { useSesion } from "@/lib/auth-store";
 import { puedeVerNomina } from "@/lib/permisos";
 import { hoy, primerDiaMes, ultimoDiaMes } from "@/lib/fechas";
 import { PageHeader } from "@/components/ui/display";
 import { Tabs } from "@/components/ui/tabs";
 
-type Pestana = "horas" | "costos" | "alertas" | "nomina" | "pendientes" | "avance";
+type Pestana = "horas" | "costos" | "alertas" | "nomina";
 
 const PESTANAS: { id: Pestana; etiqueta: string }[] = [
   { id: "horas", etiqueta: "Horas" },
   { id: "costos", etiqueta: "Costos por proyecto" },
   { id: "alertas", etiqueta: "Alertas de horas extra" },
   { id: "nomina", etiqueta: "Nómina por periodo" },
-  { id: "pendientes", etiqueta: "Pendientes" },
-  { id: "avance", etiqueta: "Avance de proyectos" },
 ];
 
 function mesEnCurso(): RangoFechas {
@@ -42,15 +38,13 @@ export default function PaginaReportes() {
 
   return (
     <>
-      <PageHeader titulo="Reportes" descripcion="Horas, costos, alertas, nómina y avance de los proyectos" />
+      <PageHeader titulo="Reportes" descripcion="Horas, costos, alertas y nómina" />
       <Tabs pestanas={pestanas} activa={activa} onCambiar={setActiva} />
       <div role="tabpanel" aria-label={etiquetaActiva}>
         {activa === "horas" && <ReporteHorasTab rango={rango} onCambiarRango={setRango} />}
         {activa === "costos" && <CostosProyectosTab rango={rango} onCambiarRango={setRango} />}
         {activa === "alertas" && <AlertasTab rango={rango} onCambiarRango={setRango} />}
         {activa === "nomina" && verNomina && <NominaPeriodosTab habilitado={verNomina} />}
-        {activa === "pendientes" && <PendientesTab />}
-        {activa === "avance" && <AvanceProyectosTab />}
       </div>
     </>
   );

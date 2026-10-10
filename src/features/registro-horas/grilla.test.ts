@@ -59,15 +59,12 @@ function tipo(id: number, codigo: CodigoTipoHora, extra: Partial<TipoHora> = {})
   };
 }
 
-function asignacion(trabajadorId: number, nombre: string, fechaInicio: string, fechaFin: string | null): Asignacion {
+function asignacion(trabajadorId: number, nombre: string): Asignacion {
   return {
-    id: trabajadorId * 10 + Number(fechaInicio.slice(-2)),
+    id: trabajadorId * 10,
     trabajadorId,
     proyectoId: 7,
-    fechaInicio,
-    fechaFin,
     rolEnProyecto: null,
-    vigente: true,
     trabajador: { id: trabajadorId, nombre, numeroDocumento: String(trabajadorId), cargo: "Electricista" },
     proyecto: { id: 7, codigo: "P-7", nombre: "Subestación" },
     creadoEn: "2026-01-01T00:00:00Z",
@@ -249,27 +246,24 @@ describe("totales", () => {
 });
 
 describe("días editables y filas de la grilla", () => {
-  const rangos = [{ fechaInicio: "2026-10-07", fechaFin: "2026-10-09" }];
-
-  it("bloquea días fuera de la asignación y posteriores a hoy", () => {
-    expect(diaEditable("2026-10-06", rangos, "2026-10-08")).toBe(false);
-    expect(diaEditable("2026-10-07", rangos, "2026-10-08")).toBe(true);
-    expect(diaEditable("2026-10-09", rangos, "2026-10-08")).toBe(false);
-    expect(diaEditable("2026-10-20", [{ fechaInicio: "2026-10-01", fechaFin: null }], "2026-10-30")).toBe(true);
+  it("permite toda la semana en curso y bloquea semanas futuras y trabajadores sin asignación", () => {
+    expect(diaEditable("2026-10-07", true, "2026-10-08")).toBe(true);
+    expect(diaEditable("2026-10-10", true, "2026-10-08")).toBe(true); // sábado
+    expect(diaEditable("2026-10-11", true, "2026-10-08")).toBe(true); // domingo
+    expect(diaEditable("2026-10-12", true, "2026-10-08")).toBe(false);
+    expect(diaEditable("2026-10-07", false, "2026-10-08")).toBe(false);
   });
 
-  it("agrupa asignaciones por trabajador, agrega registros huérfanos y ordena por nombre", () => {
+  it("lista a los asignados, agrega quienes tienen registros sin asignación y ordena por nombre", () => {
     const filas = trabajadoresGrilla(
-      [
-        asignacion(1, "Zuluaga Pedro", "2026-10-01", "2026-10-06"),
-        asignacion(2, "Álvarez Ana", "2026-09-01", null),
-        asignacion(1, "Zuluaga Pedro", "2026-10-08", null),
-      ],
+      [asignacion(1, "Zuluaga Pedro"), asignacion(2, "Álvarez Ana"), asignacion(1, "Zuluaga Pedro")],
       [registro(3, "2026-10-05", [[ORD, "ORD", 8]], "Martínez Luis")],
     );
-    expect(filas.map((f) => f.nombre)).toEqual(["Álvarez Ana", "Martínez Luis", "Zuluaga Pedro"]);
-    expect(filas[2].rangos).toHaveLength(2);
-    expect(filas[1].rangos).toEqual([]);
+    expect(filas.map((f) => [f.nombre, f.asignado])).toEqual([
+      ["Álvarez Ana", true],
+      ["Martínez Luis", false],
+      ["Zuluaga Pedro", true],
+    ]);
   });
 
   it("incluye tipos inactivos solo si tienen horas registradas", () => {
