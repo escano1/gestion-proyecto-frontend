@@ -11,8 +11,8 @@ import { Field, Input } from "@/components/ui/form-controls";
 import { mensajeError } from "@/lib/errores";
 
 const esquema = z.object({
-  // Recortar antes de validar: correos pegados con espacios son comunes.
-  email: z.string().trim().toLowerCase().pipe(z.email("Correo inválido")),
+  // Recortar antes de validar: usuarios pegados con espacios son comunes.
+  email: z.string().trim().toLowerCase().min(1, "Ingrese el usuario"),
   password: z.string().min(1, "Ingrese la contraseña"),
 });
 
@@ -43,9 +43,9 @@ export default function PaginaLogin() {
         </div>
         {/* method="post": si se envía antes de hidratar, las credenciales nunca quedan en la URL. */}
         <form method="post" onSubmit={enviar} className="space-y-4 rounded-xl bg-white p-6 shadow-xl" noValidate>
-          <Field label="Correo electrónico" error={errors.email?.message}>
+          <Field label="Usuario" error={errors.email?.message}>
             {(id) => (
-              <Input id={id} type="email" autoComplete="username" autoFocus aria-invalid={!!errors.email} {...register("email")} />
+              <Input id={id} type="text" autoComplete="username" autoFocus aria-invalid={!!errors.email} {...register("email")} />
             )}
           </Field>
           <Field label="Contraseña" error={errors.password?.message}>
