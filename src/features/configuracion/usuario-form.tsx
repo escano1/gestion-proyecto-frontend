@@ -17,8 +17,8 @@ import type { Usuario } from "@/types/api";
 
 const base = z.object({
   nombre: textoRequerido("Ingrese el nombre", 150),
-  // Se recorta antes de validar: z.email().trim() rechaza espacios al inicio o al final.
-  email: z.string().trim().toLowerCase().pipe(z.email("Correo inválido")),
+  // Se recorta antes de validar: los espacios al inicio o al final se descartan.
+  email: z.string().trim().toLowerCase().min(1, "Ingrese el usuario"),
   rol: z.enum(["ADMIN", "GESTOR_PROYECTOS", "NOMINA", "CONSULTA"]),
   activo: z.boolean(),
   password: z.string(),
@@ -99,13 +99,13 @@ export function UsuarioForm({ usuario, esPropio, onCerrar }: Props) {
           {(id) => <Input id={id} autoComplete="off" aria-invalid={!!errors.nombre} {...register("nombre")} />}
         </Field>
         {usuario ? (
-          <Field label="Correo electrónico" ayuda="El correo no se puede modificar" className="sm:col-span-2">
+          <Field label="Usuario o correo" ayuda="No se puede modificar" className="sm:col-span-2">
             {(id) => <Input id={id} type="email" value={usuario.email} disabled readOnly />}
           </Field>
         ) : (
-          <Field label="Correo electrónico" error={errors.email?.message} className="sm:col-span-2">
+          <Field label="Usuario o correo" error={errors.email?.message} className="sm:col-span-2">
             {(id) => (
-              <Input id={id} type="email" autoComplete="off" aria-invalid={!!errors.email} {...register("email")} />
+              <Input id={id} type="text" autoComplete="off" aria-invalid={!!errors.email} {...register("email")} />
             )}
           </Field>
         )}

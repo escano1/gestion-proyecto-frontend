@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-/** Política de contraseñas del API: mínimo 8 caracteres, con al menos una letra y un número. */
-export const POLITICA_PASSWORD = "Mínimo 8 caracteres, con al menos una letra y un número";
+/** Política de contraseñas del API: solo se exige que no esté vacía. */
+export const POLITICA_PASSWORD = "Cualquier contraseña no vacía";
 
 export function cumplePolitica(password: string): boolean {
-  return password.length >= 8 && /\p{L}/u.test(password) && /\d/.test(password);
+  return password.length > 0;
 }
 
 export const passwordSegura = (mensajeVacio = "Ingrese la contraseña") =>
