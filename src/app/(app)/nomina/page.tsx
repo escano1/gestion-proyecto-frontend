@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Plus, RefreshCw } from "lucide-react";
 import { useLiquidaciones } from "@/features/nomina/api";
 import { NuevaLiquidacionModal } from "@/features/liquidacion/nueva-liquidacion-modal";
-import { rangoFechas } from "@/features/liquidacion/formato-nomina";
 import { SinPermisoNomina } from "@/features/liquidacion/sin-permiso";
 import { useSesion } from "@/lib/auth-store";
 import { puedeEscribir, puedeVerNomina } from "@/lib/permisos";
@@ -46,7 +45,7 @@ function ListadoLiquidaciones({ puedeCrear }: { puedeCrear: boolean }) {
     <>
       <PageHeader
         titulo="Nómina"
-        descripcion="Liquidaciones quincenales y mensuales"
+        descripcion="Liquidaciones semanales (lunes a domingo)"
         acciones={
           puedeCrear && (
             <Button onClick={() => setCreando(true)}>
@@ -94,7 +93,6 @@ function ListadoLiquidaciones({ puedeCrear }: { puedeCrear: boolean }) {
             <thead>
               <tr>
                 <Th>Periodo</Th>
-                <Th>Fechas</Th>
                 <Th>Estado</Th>
                 <Th alinear="derecha">Trabajadores</Th>
                 <Th alinear="derecha">Devengado</Th>
@@ -110,7 +108,6 @@ function ListadoLiquidaciones({ puedeCrear }: { puedeCrear: boolean }) {
                       {nombrePeriodo(l)}
                     </Link>
                   </Td>
-                  <Td className="whitespace-nowrap">{rangoFechas(l.fechaInicio, l.fechaFin)}</Td>
                   <Td>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <EstadoBadge dominio="liquidacion" estado={l.estado} />

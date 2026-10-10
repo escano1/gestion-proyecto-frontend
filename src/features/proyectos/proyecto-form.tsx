@@ -19,12 +19,9 @@ const esquema = z
   .object({
     codigo: textoRequerido("Ingrese el código", 30),
     nombre: textoRequerido("Ingrese el nombre", 200),
-    cliente: textoRequerido("Ingrese el cliente", 150),
-    ubicacion: textoRequerido("Ingrese la ubicación", 200),
     descripcion: textoOpcional(5000),
     fechaInicio: fechaRequerida("Seleccione la fecha de inicio"),
     fechaFinPlaneada: fechaOpcional(),
-    fechaFinReal: fechaOpcional(),
     estado: z.enum(["ACTIVO", "SUSPENDIDO", "FINALIZADO"]),
     presupuesto: numeroOpcional(
       z
@@ -37,9 +34,6 @@ const esquema = z
     if (d.fechaFinPlaneada && d.fechaFinPlaneada < d.fechaInicio) {
       ctx.addIssue({ code: "custom", path: ["fechaFinPlaneada"], message: "Debe ser igual o posterior al inicio" });
     }
-    if (d.fechaFinReal && d.fechaFinReal < d.fechaInicio) {
-      ctx.addIssue({ code: "custom", path: ["fechaFinReal"], message: "Debe ser igual o posterior al inicio" });
-    }
   });
 
 type Entrada = z.input<typeof esquema>;
@@ -49,12 +43,9 @@ function valoresIniciales(p?: Proyecto): Entrada {
   return {
     codigo: p?.codigo ?? "",
     nombre: p?.nombre ?? "",
-    cliente: p?.cliente ?? "",
-    ubicacion: p?.ubicacion ?? "",
     descripcion: p?.descripcion ?? "",
     fechaInicio: p?.fechaInicio ?? hoy(),
     fechaFinPlaneada: p?.fechaFinPlaneada ?? "",
-    fechaFinReal: p?.fechaFinReal ?? "",
     estado: p?.estado ?? "ACTIVO",
     presupuesto: p?.presupuesto ?? undefined,
   };
@@ -117,12 +108,6 @@ export function ProyectoForm({ proyecto, onCerrar, onGuardado }: Props) {
         <Field label="Nombre" error={errors.nombre?.message} className="md:col-span-2">
           {(id) => <Input id={id} aria-invalid={!!errors.nombre} {...register("nombre")} />}
         </Field>
-        <Field label="Cliente" error={errors.cliente?.message}>
-          {(id) => <Input id={id} aria-invalid={!!errors.cliente} {...register("cliente")} />}
-        </Field>
-        <Field label="Ubicación" error={errors.ubicacion?.message} className="md:col-span-2">
-          {(id) => <Input id={id} aria-invalid={!!errors.ubicacion} {...register("ubicacion")} />}
-        </Field>
         <Field label="Fecha de inicio" error={errors.fechaInicio?.message}>
           {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaInicio} {...register("fechaInicio")} />}
         </Field>
@@ -130,9 +115,6 @@ export function ProyectoForm({ proyecto, onCerrar, onGuardado }: Props) {
           {(id) => (
             <Input id={id} type="date" aria-invalid={!!errors.fechaFinPlaneada} {...register("fechaFinPlaneada")} />
           )}
-        </Field>
-        <Field label="Fin real" error={errors.fechaFinReal?.message}>
-          {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaFinReal} {...register("fechaFinReal")} />}
         </Field>
         <Field label="Estado" error={errors.estado?.message}>
           {(id) => (

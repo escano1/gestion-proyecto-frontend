@@ -15,6 +15,11 @@ export function sumarDias(fecha: string, dias: number): string {
   return f.toISOString().slice(0, 10);
 }
 
+/** Días reales entre dos fechas, contando ambos extremos. */
+export function diferenciaDias(desde: string, hasta: string): number {
+  return Math.round((aUtc(hasta).getTime() - aUtc(desde).getTime()) / 86_400_000) + 1;
+}
+
 /** Lunes de la semana que contiene la fecha. */
 export function inicioSemana(fecha: string): string {
   const dia = (aUtc(fecha).getUTCDay() + 6) % 7;

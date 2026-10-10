@@ -9,25 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/form-controls";
 import { useGuardarAsignacion, useTrabajadores } from "@/features/personal/api";
 import { mensajeError } from "@/lib/errores";
-import { formatoFecha } from "@/lib/formato";
-import { hoy } from "@/lib/fechas";
-import { fechaOpcional, fechaRequerida, numeroRequerido, textoOpcional } from "@/lib/validacion";
+import { numeroRequerido, textoOpcional } from "@/lib/validacion";
 import type { Asignacion } from "@/types/api";
 
-const esquema = z
-  .object({
-    trabajadorId: numeroRequerido(
-      z.number({ error: "Seleccione un trabajador" }).int().positive("Seleccione un trabajador"),
-    ),
-    fechaInicio: fechaRequerida("Seleccione la fecha de inicio"),
-    fechaFin: fechaOpcional(),
-    rolEnProyecto: textoOpcional(100),
-  })
-  .superRefine((d, ctx) => {
-    if (d.fechaFin && d.fechaFin < d.fechaInicio) {
-      ctx.addIssue({ code: "custom", path: ["fechaFin"], message: "Debe ser igual o posterior al inicio" });
-    }
-  });
+const esquema = z.object({
+  trabajadorId: numeroRequerido(
+    z.number({ error: "Seleccione un trabajador" }).int().positive("Seleccione un trabajador"),
+  ),
+  rolEnProyecto: textoOpcional(100),
+});
 
 type Entrada = z.input<typeof esquema>;
 type Salida = z.output<typeof esquema>;
@@ -35,8 +25,6 @@ type Salida = z.output<typeof esquema>;
 function valoresIniciales(a?: Asignacion): Entrada {
   return {
     trabajadorId: a?.trabajadorId ?? "",
-    fechaInicio: a?.fechaInicio ?? hoy(),
-    fechaFin: a?.fechaFin ?? "",
     rolEnProyecto: a?.rolEnProyecto ?? "",
   };
 }
@@ -63,9 +51,8 @@ export function AsignacionForm({ proyectoId, asignacion, onCerrar }: Props) {
   const trabajadorId = useWatch({ control, name: "trabajadorId" });
   const seleccionado = trabajadores.data?.find((t) => t.id === Number(trabajadorId));
 
-  const enviar = handleSubmit(({ trabajadorId: idTrabajador, fechaInicio, fechaFin, rolEnProyecto }) => {
-    // Fecha fin vacía = asignación indefinida (null la deja abierta en el PATCH).
-    const comunes = { fechaInicio, fechaFin: fechaFin ?? null, rolEnProyecto: rolEnProyecto ?? null };
+  const enviar = handleSubmit(({ trabajadorId: idTrabajador, rolEnProyecto }) => {
+    const comunes = { rolEnProyecto: rolEnProyecto ?? null };
     guardar.mutate(
       asignacion
         ? { id: asignacion.id, datos: comunes }
@@ -102,7 +89,7 @@ export function AsignacionForm({ proyectoId, asignacion, onCerrar }: Props) {
           <Field
             label="Trabajador"
             error={errors.trabajadorId?.message ?? (trabajadores.isError ? mensajeError(trabajadores.error) : undefined)}
-            ayuda={seleccionado ? `${seleccionado.cargo} · ingresó el ${formatoFecha(seleccionado.fechaIngreso)}` : undefined}
+            ayuda={seleccionado ? seleccionado.cargo : undefined}
             className="sm:col-span-2"
           >
             {(id) => (
@@ -124,12 +111,6 @@ export function AsignacionForm({ proyectoId, asignacion, onCerrar }: Props) {
         )}
         <Field label="Rol en el proyecto" error={errors.rolEnProyecto?.message} ayuda="Opcional, p. ej. Residente de obra" className="sm:col-span-2">
           {(id) => <Input id={id} aria-invalid={!!errors.rolEnProyecto} {...register("rolEnProyecto")} />}
-        </Field>
-        <Field label="Desde" error={errors.fechaInicio?.message}>
-          {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaInicio} {...register("fechaInicio")} />}
-        </Field>
-        <Field label="Hasta" error={errors.fechaFin?.message} ayuda="Vacío = indefinida">
-          {(id) => <Input id={id} type="date" aria-invalid={!!errors.fechaFin} {...register("fechaFin")} />}
         </Field>
       </form>
     </Modal>

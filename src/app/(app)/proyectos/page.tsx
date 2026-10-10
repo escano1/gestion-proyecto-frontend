@@ -3,8 +3,9 @@
 import { useDeferredValue, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Search } from "lucide-react";
-import { useProyectos } from "@/features/personal/api";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useEliminarProyecto, useProyectos } from "@/features/personal/api";
 import { ProyectoForm } from "@/features/proyectos/proyecto-form";
 import { filtrarProyectos } from "@/features/proyectos/utilidades";
 import { useSesion } from "@/lib/auth-store";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, EmptyState, ErrorState, PageHeader, Spinner } from "@/components/ui/display";
 import { EstadoBadge } from "@/components/ui/estado-badge";
 import { Input, Select } from "@/components/ui/form-controls";
+import { ConfirmDialog } from "@/components/ui/modal";
 import { Table, TBody, Td, Th, Tr } from "@/components/ui/table";
 import type { EstadoProyecto, Proyecto } from "@/types/api";
 
@@ -26,9 +28,22 @@ export default function PaginaProyectos() {
   const termino = useDeferredValue(busqueda);
   const consulta = useProyectos({ estado: estado || undefined });
   const [edicion, setEdicion] = useState<{ proyecto?: Proyecto } | null>(null);
+  const [porEliminar, setPorEliminar] = useState<Proyecto | null>(null);
+  const eliminar = useEliminarProyecto();
 
   const editable = puedeEscribir(rol, "proyectos");
   const proyectos = consulta.data ? filtrarProyectos(consulta.data, termino) : [];
+
+  const confirmarEliminar = () => {
+    if (!porEliminar) return;
+    eliminar.mutate(porEliminar.id, {
+      onSuccess: () => {
+        toast.success("Proyecto eliminado");
+        setPorEliminar(null);
+      },
+      onError: (e) => toast.error(mensajeError(e)),
+    });
+  };
 
   return (
     <>
@@ -93,18 +108,18 @@ export default function PaginaProyectos() {
                 <Th>Fin planeado</Th>
                 <Th>Estado</Th>
                 <Th alinear="derecha">Presupuesto</Th>
-                {editable && <Th className="w-12" />}
+                {editable && <Th className="w-20" />}
               </tr>
             </thead>
             <TBody>
               {proyectos.map((p) => (
                 <Tr key={p.id}>
-                  <Td className="whitespace-nowrap">
+                  <Td className="whitespace-nowrap">{p.codigo}</Td>
+                  <Td className="min-w-48">
                     <Link href={`/proyectos/${p.id}`} className="font-medium text-marca-700 hover:underline">
-                      {p.codigo}
+                      {p.nombre}
                     </Link>
                   </Td>
-                  <Td className="min-w-48">{p.nombre}</Td>
                   <Td>{p.cliente}</Td>
                   <Td>{p.ubicacion}</Td>
                   <Td className="whitespace-nowrap">{formatoFecha(p.fechaInicio)}</Td>
@@ -125,6 +140,14 @@ export default function PaginaProyectos() {
                       >
                         <Pencil className="size-4" />
                       </Button>
+                      <Button
+                        variante="fantasma"
+                        tamano="sm"
+                        onClick={() => setPorEliminar(p)}
+                        aria-label={`Eliminar ${p.codigo}`}
+                      >
+                        <Trash2 className="size-4 text-red-600" />
+                      </Button>
                     </Td>
                   )}
                 </Tr>
@@ -143,6 +166,22 @@ export default function PaginaProyectos() {
           }}
         />
       )}
+
+      <ConfirmDialog
+        abierto={porEliminar !== null}
+        titulo="Eliminar proyecto"
+        mensaje={
+          <>
+            ¿Eliminar <strong>{porEliminar?.codigo} · {porEliminar?.nombre}</strong>? Esta acción no se puede
+            deshacer: también se eliminarán sus horas registradas, asignaciones y materiales.
+          </>
+        }
+        textoConfirmar="Eliminar"
+        peligroso
+        cargando={eliminar.isPending}
+        onConfirmar={confirmarEliminar}
+        onCancelar={() => setPorEliminar(null)}
+      />
     </>
   );
 }

@@ -11,9 +11,6 @@ export const ENTIDADES_AUDITADAS: Record<string, string> = {
   RegistroHoras: "Registro de horas",
   LiquidacionNomina: "Liquidación de nómina",
   MaterialProyecto: "Material de proyecto",
-  HerramientaProyecto: "Herramienta de proyecto",
-  HitoProyecto: "Hito de proyecto",
-  BitacoraEntrada: "Entrada de bitácora",
 };
 
 export const ACCIONES_AUDITORIA: Record<AccionAuditoria, [string, Tono]> = {

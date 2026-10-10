@@ -8,7 +8,7 @@ const ESCRITURA: Record<string, Rol[]> = {
   horas: ["GESTOR_PROYECTOS", "NOMINA"],
   nomina: ["NOMINA"],
   parametros: ["NOMINA"],
-  operacionProyecto: ["GESTOR_PROYECTOS"], // materiales, herramientas, hitos, bitácora
+  operacionProyecto: ["GESTOR_PROYECTOS"], // materiales
   usuarios: [],
   auditoria: [],
 };

@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Clock, FolderKanban, Package, Users, Wallet, Wrench } from "lucide-react";
+import { AlertTriangle, Clock, FolderKanban, Users, Wallet } from "lucide-react";
 import { useDashboard } from "@/features/reportes/api";
 import { GraficoCostoPorProyecto, GraficoHorasPorTipo } from "@/features/dashboard/graficos";
-import { AvanceProyectos } from "@/features/dashboard/avance-proyectos";
 import { UltimaLiquidacion } from "@/features/dashboard/ultima-liquidacion";
 import { mensajeError } from "@/lib/errores";
 import { formatoFecha, formatoHoras, formatoNumero, formatoPesos } from "@/lib/formato";
@@ -67,19 +66,6 @@ export default function PaginaDashboard() {
               </Link>
             }
           />
-          <StatCard
-            titulo="Materiales pendientes"
-            valor={formatoNumero(d.materialesPendientes)}
-            detalle="Pendientes o solicitados"
-            icono={<Package className={ICONO} aria-hidden />}
-          />
-          <StatCard
-            titulo="Herramientas vencidas"
-            valor={formatoNumero(d.herramientasVencidas)}
-            detalle="Con devolución prevista vencida"
-            tono={d.herramientasVencidas > 0 ? "alerta" : "normal"}
-            icono={<Wrench className={ICONO} aria-hidden />}
-          />
         </section>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -101,12 +87,7 @@ export default function PaginaDashboard() {
           </Card>
         </div>
 
-        <div className={cn("grid grid-cols-1 gap-6", d.ultimaLiquidacion && "lg:grid-cols-3")}>
-          <div className={cn(d.ultimaLiquidacion && "lg:col-span-2")}>
-            <AvanceProyectos proyectos={d.avanceProyectos} />
-          </div>
-          {d.ultimaLiquidacion && <UltimaLiquidacion liquidacion={d.ultimaLiquidacion} />}
-        </div>
+        {d.ultimaLiquidacion && <UltimaLiquidacion liquidacion={d.ultimaLiquidacion} />}
       </div>
     </>
   );

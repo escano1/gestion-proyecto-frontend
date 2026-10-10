@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diasSemana, inicioSemana, nombreDiaCorto, sumarDias, ultimoDiaMes } from "../fechas";
+import { diasSemana, diferenciaDias, inicioSemana, nombreDiaCorto, sumarDias, ultimoDiaMes } from "../fechas";
 import { formatoFecha, formatoPorcentaje, nombrePeriodo } from "../formato";
 import { parametros } from "../api";
 
@@ -21,6 +21,11 @@ describe("fechas", () => {
     expect(sumarDias("2026-12-31", 1)).toBe("2027-01-01");
     expect(ultimoDiaMes("2028-02-10")).toBe("2028-02-29");
   });
+
+  it("calcula la diferencia de días cruzando de mes", () => {
+    expect(diferenciaDias("2026-10-26", "2026-11-01")).toBe(7);
+    expect(diferenciaDias("2026-10-05", "2026-10-05")).toBe(1);
+  });
 });
 
 describe("formato", () => {
@@ -34,7 +39,7 @@ describe("formato", () => {
   });
 
   it("nombra periodos de nómina", () => {
-    expect(nombrePeriodo({ tipoPeriodo: "QUINCENAL", anio: 2026, mes: 10, quincena: 2 })).toBe("Quincena 2 · octubre 2026");
+    expect(nombrePeriodo({ fechaInicio: "2026-10-05", fechaFin: "2026-10-11" })).toBe("Semana 05/10/2026 – 11/10/2026");
   });
 });
 

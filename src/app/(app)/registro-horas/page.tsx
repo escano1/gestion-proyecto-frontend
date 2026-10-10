@@ -75,7 +75,7 @@ export default function PaginaRegistroHoras() {
   const dias = diasSemana(lunes);
   const filtro = { proyectoId, desde: lunes, hasta: sumarDias(lunes, 6) };
 
-  const asignaciones = useAsignaciones(filtro, hayProyecto);
+  const asignaciones = useAsignaciones({ proyectoId }, hayProyecto);
   const pagina1 = useRegistrosHoras({ ...filtro, limite: LIMITE }, hayProyecto);
   const hayMas = !pagina1.isPlaceholderData && (pagina1.data?.total ?? 0) > LIMITE;
   const pagina2 = useRegistrosHoras({ ...filtro, pagina: 2, limite: LIMITE }, hayProyecto && hayMas);
@@ -203,7 +203,7 @@ export default function PaginaRegistroHoras() {
   else if (trabajadores.length === 0)
     contenido = (
       <EmptyState
-        titulo="Sin trabajadores asignados en esta semana"
+        titulo="Sin trabajadores asignados al proyecto"
         descripcion="Asigne trabajadores al proyecto para poder registrar sus horas."
         accion={
           puedeEscribir(rol, "asignaciones") && (
@@ -235,7 +235,7 @@ export default function PaginaRegistroHoras() {
           onCambiar={cambiarCelda}
         />
         <p className="border-t border-slate-200 px-3 py-2 text-xs text-slate-500">
-          Gris: día fuera de la asignación o futuro · Azul: cambio sin guardar · Ámbar: más de{" "}
+          Gris: semana futura o trabajador sin asignación · Azul: cambio sin guardar · Ámbar: más de{" "}
           {limiteExtraDia} h extra en el día (horas de este proyecto). Enter baja a la siguiente fila, ↑/↓ ajustan
           0,5 h y Ctrl+S guarda.
         </p>

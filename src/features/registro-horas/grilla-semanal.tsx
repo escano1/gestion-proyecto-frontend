@@ -10,7 +10,6 @@ import {
   calcularTotales,
   claveCelda,
   diaEditable,
-  fechaEnRangos,
   leerHoras,
   nombreDiaLargo,
   tiposConDatos,
@@ -107,8 +106,7 @@ export function GrillaSemanal({
           const t = totales.get(trabajador.id);
           const tiposTrabajador = conDatos.get(trabajador.id);
           const filas = tipos.filter((tipo) => codigosVisibles.has(tipo.codigo) || tiposTrabajador?.has(tipo.id));
-          const habilitados = dias.map((fecha) => diaEditable(fecha, trabajador.rangos, hoy));
-          const cubreSemana = dias.every((fecha) => fechaEnRangos(fecha, trabajador.rangos));
+          const habilitados = dias.map((fecha) => diaEditable(fecha, trabajador.asignado, hoy));
           const extraSemana = (t?.extra ?? 0) > limiteExtraSemana;
 
           return (
@@ -124,17 +122,8 @@ export function GrillaSemanal({
                   <span className="block truncate text-xs font-normal text-slate-500">
                     {[trabajador.cargo, trabajador.numeroDocumento].filter(Boolean).join(" · ")}
                   </span>
-                  {trabajador.rangos.length === 0 ? (
-                    <span className="block text-xs font-normal text-amber-700">Sin asignación en la semana</span>
-                  ) : (
-                    !cubreSemana && (
-                      <span className="block text-xs font-normal text-slate-500">
-                        Asignado:{" "}
-                        {trabajador.rangos
-                          .map((r) => `${formatoFecha(r.fechaInicio)} – ${r.fechaFin ? formatoFecha(r.fechaFin) : "…"}`)
-                          .join(", ")}
-                      </span>
-                    )
+                  {!trabajador.asignado && (
+                    <span className="block text-xs font-normal text-amber-700">Sin asignación al proyecto</span>
                   )}
                 </th>
                 {dias.map((fecha) => (
